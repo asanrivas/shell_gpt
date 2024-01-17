@@ -169,10 +169,12 @@ def main(
         )
 
     if chat and repl:
-        raise BadArgumentUsage("--chat and --repl options cannot be used together.")
+        raise BadArgumentUsage(
+            "--chat and --repl options cannot be used together.")
 
     if editor and stdin_passed:
-        raise BadArgumentUsage("--editor option cannot be used with stdin input.")
+        raise BadArgumentUsage(
+            "--editor option cannot be used with stdin input.")
 
     if editor:
         prompt = get_edited_prompt()
@@ -183,7 +185,7 @@ def main(
         else SystemRole.get(role)
     )
 
-    function_schemas = (get_openai_schemas() or None) if functions else None
+    # function_schemas = (get_openai_schemas() or None) if functions else None
 
     if repl:
         # Will be in infinite loop here until user exits with Ctrl+C.
@@ -194,7 +196,7 @@ def main(
             top_p=top_p,
             chat_id=repl,
             caching=cache,
-            functions=function_schemas,
+            # functions=function_schemas,
         )
 
     if chat:
@@ -205,7 +207,7 @@ def main(
             top_p=top_p,
             chat_id=chat,
             caching=cache,
-            functions=function_schemas,
+            # functions=function_schemas,
         )
     else:
         full_completion = DefaultHandler(role_class).handle(
@@ -214,14 +216,15 @@ def main(
             temperature=temperature,
             top_p=top_p,
             caching=cache,
-            functions=function_schemas,
+            # functions=function_schemas,
         )
 
     while shell:
         option = typer.prompt(
             text="[E]xecute, [D]escribe, [A]bort",
             type=Choice(("e", "d", "a", "y"), case_sensitive=False),
-            default="e" if cfg.get("DEFAULT_EXECUTE_SHELL_CMD") == "true" else "a",
+            default="e" if cfg.get(
+                "DEFAULT_EXECUTE_SHELL_CMD") == "true" else "a",
             show_choices=False,
             show_default=False,
         )
@@ -235,7 +238,7 @@ def main(
                 temperature=temperature,
                 top_p=top_p,
                 caching=cache,
-                functions=function_schemas,
+                # functions=function_schemas,
             )
             continue
         break

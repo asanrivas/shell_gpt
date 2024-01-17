@@ -1,9 +1,10 @@
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, Generator, List
 
 import typer
-from openai import OpenAI
+from openai import AzureOpenAI
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -18,10 +19,13 @@ cache = Cache(int(cfg.get("CACHE_LENGTH")), Path(cfg.get("CACHE_PATH")))
 
 class Handler:
     def __init__(self, role: SystemRole) -> None:
-        self.client = OpenAI(
-            base_url=cfg.get("OPENAI_BASE_URL"),
-            api_key=cfg.get("OPENAI_API_KEY"),
-            timeout=int(cfg.get("REQUEST_TIMEOUT")),
+        self.client = AzureOpenAI(
+            api_key=os.getenv("AZURE_API_KEY"),
+            api_version=os.getenv("AZURE_API_VERSION"),
+            azure_endpoint=os.getenv("AZURE_API_BASE")
+            # base_url=cfg.get("OPENAI_BASE_URL"),
+            # api_key=cfg.get("OPENAI_API_KEY"),
+            # timeout=int(cfg.get("REQUEST_TIMEOUT")),
         )
         self.role = role
         self.disable_stream = cfg.get("DISABLE_STREAMING") == "true"
@@ -39,7 +43,8 @@ class Handler:
         ) as live:
             if self.disable_stream:
                 live.update(
-                    Markdown(markup="Loading...\r", code_theme=self.theme_name),
+                    Markdown(markup="Loading...\r",
+                             code_theme=self.theme_name),
                     refresh=True,
                 )
             for word in self.get_completion(messages=messages, **kwargs):
@@ -75,7 +80,8 @@ class Handler:
             {
                 "role": "assistant",
                 "content": "",
-                "function_call": {"name": name, "arguments": arguments},  # type: ignore
+                # type: ignore
+                "function_call": {"name": name, "arguments": arguments},
             }
         )
 
